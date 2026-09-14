@@ -1,0 +1,101 @@
+// Renders the real route modules through Vite, so import errors, bad module-scope
+// references and missing strings surface without needing a browser.
+import { createServer } from "vite";
+import React from "react";
+import { renderToString } from "react-dom/server";
+
+// react-router calls useLayoutEffect; harmless for a client-only app.
+const warn = console.error;
+console.error = (m, ...a) => { if (!String(m).includes("useLayoutEffect")) warn(m, ...a); };
+
+const vite = await createServer({ server: { middlewareMode: true }, appType: "custom", logLevel: "warn" });
+
+// No DOM shims on purpose: readPref/writePref are wrapped in try/catch and fall
+// back when `window` is absent, and the effects that touch document never run
+// during renderToString. Defining a fake window makes react-dom take the
+// browser path and blow up.
+
+let fail = 0;
+const check = (name, html, needles) => {
+  const missing = needles.filter((n) => !html.includes(n));
+  if (missing.length) { fail++; console.log(`FAIL  ${name} — missing: ${missing.join(" | ")}`); }
+  else console.log(`OK    ${name} (${html.length.toLocaleString()} chars)`);
+};
+
+const { AppProvider } = await vite.ssrLoadModule("/src/AppContext.jsx");
+const { MemoryRouter } = await vite.ssrLoadModule("react-router-dom");
+
+const { Routes, Route } = await vite.ssrLoadModule("react-router-dom");
+const { BOOK_BASE } = await vite.ssrLoadModule("/src/lib/routes.js");
+
+// Mirrors the route table in App.jsx so useParams() sees real values.
+async function render(path) {
+  const [Landing, Book, Quiz] = await Promise.all(
+    ["/src/routes/Landing.jsx", "/src/routes/Book.jsx", "/src/routes/Quiz.jsx"]
+      .map((m) => vite.ssrLoadModule(m).then((x) => x.default))
+  );
+  const e = React.createElement;
+  return renderToString(
+    e(MemoryRouter, { initialEntries: [path] },
+      e(AppProvider, null,
+        e(Routes, null,
+          e(Route, { path: "/", element: e(Landing) }),
+          e(Route, { path: BOOK_BASE, element: e(Book) }),
+          e(Route, { path: `${BOOK_BASE}/:slug`, element: e(Quiz) })
+        )))
+  );
+}
+
+check("Landing  /", await render("/"),
+  ["The Gospel of Mark", "559", "16", "9", "Start practising", "/new-testament/mark"]);
+
+check("Book     /new-testament/mark", await render("/new-testament/mark"),
+  ["Chapters", "Mock papers", "Full papers", "Mark 1 to 8", "Mark 9 to 16",
+   "/new-testament/mark/ch-1", "/new-testament/mark/ch-16",
+   "/new-testament/mark/mock-full-1", "/new-testament/mark/mock-1-to-8-1",
+   "/new-testament/mark/mock-9-to-16-3", "/new-testament/mark/all"]);
+
+check("Quiz     ch-1 (loading state)",
+  await render("/new-testament/mark/ch-1"),
+  ["Loading the questions", "Leave"]);
+
+// Unknown paper must reach the not-found screen, not crash.
+const bad = await render("/new-testament/mark/mock-nope-9");
+check("Quiz     unknown slug", bad, ["No such paper"]);
+
+// Content loaders run under Vite, so import.meta.glob resolves.
+const content = await vite.ssrLoadModule("/src/lib/content.js");
+const mock = await content.loadMock("mock-1-to-8-1");
+const ch = await content.loadChapter(14);
+check("loadMock mock-1-to-8-1", JSON.stringify({ n: mock.length, ok: mock.every((q) => q.ch <= 8) }),
+  ['"n":85', '"ok":true']);
+check("loadChapter 14", JSON.stringify({ n: ch.qs.length, t: ch.title }),
+  ['"n":47', "Anointing"]);
+
+// Every linked URL must resolve to a real paper, not the not-found screen.
+const { MOCKS } = await vite.ssrLoadModule("/src/lib/content.js");
+const { CHAPTERS: META } = await vite.ssrLoadModule("/src/data/meta.js");
+const slugs = [
+  ...META.map((c) => `ch-${c.ch}`),
+  "all",
+  ...MOCKS.map((m) => m.slug),
+];
+let routeBad = 0;
+for (const slug of slugs) {
+  const html = await render(`${BOOK_BASE}/${slug}`);
+  if (html.includes("No such paper")) { console.log(`FAIL  route ${slug} -> not found`); routeBad++; }
+}
+if (routeBad) fail += routeBad;
+console.log(`${routeBad ? "FAIL " : "OK   "} all ${slugs.length} paper URLs resolve`);
+
+// And a slug that should not resolve, still does not.
+for (const bad of ["ch-0", "ch-17", "ch-abc", "mock-full-4", "nonsense"]) {
+  const html = await render(`${BOOK_BASE}/${bad}`);
+  if (!html.includes("No such paper")) { console.log(`FAIL  ${bad} should not resolve`); fail++; }
+}
+console.log("OK    rejected slugs stay rejected");
+
+await vite.close();
+console.log("-".repeat(50));
+console.log(fail === 0 ? "All smoke checks passed." : `${fail} smoke check(s) FAILED.`);
+process.exit(fail ? 1 : 0);

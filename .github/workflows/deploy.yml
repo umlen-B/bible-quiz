@@ -24,7 +24,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run test
       - run: npm run build
+        env:
+          # Set this as a repository variable: Settings -> Secrets and variables
+          # -> Actions -> Variables -> New repository variable, named VITE_GA_ID.
+          VITE_GA_ID: ${{ vars.VITE_GA_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

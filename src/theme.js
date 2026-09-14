@@ -1,0 +1,31 @@
+// Tailwind class sets for each theme.
+export const TH = {
+  dark: {
+    page: "bg-slate-950 text-slate-100", card: "bg-slate-900", line: "border-slate-800",
+    line2: "border-slate-700", dim: "text-slate-400", dim2: "text-slate-500", dim3: "text-slate-600",
+    acc: "text-amber-300", accBg: "bg-amber-300", accFg: "text-slate-950", track: "bg-slate-800",
+    soft: "bg-slate-800", softFg: "text-slate-100", hover: "hover:bg-slate-800",
+    ring: "focus:ring-amber-300", pill: "bg-slate-700 text-slate-100",
+    seg: "bg-slate-900", segOn: "bg-slate-700 text-slate-100", segOff: "text-slate-500",
+    okB: "border-emerald-400", okBg: "bg-emerald-950", okFg: "text-emerald-100", okT: "text-emerald-300",
+    noB: "border-rose-400", noBg: "bg-rose-950", noFg: "text-rose-100", noT: "text-rose-300",
+    barOk: "bg-emerald-400", barMid: "bg-amber-300", barBad: "bg-rose-400",
+    overlay: "bg-slate-950 bg-opacity-90", idle: "bg-slate-900 text-slate-600 border-slate-800",
+    verse: "text-slate-100", verseDim: "text-slate-400", off: "text-slate-800",
+    hero: "bg-slate-900", root: "#020617",
+  },
+  light: {
+    page: "bg-stone-50 text-stone-900", card: "bg-white", line: "border-stone-200",
+    line2: "border-stone-300", dim: "text-stone-600", dim2: "text-stone-500", dim3: "text-stone-400",
+    acc: "text-amber-700", accBg: "bg-amber-500", accFg: "text-stone-900", track: "bg-stone-200",
+    soft: "bg-stone-200", softFg: "text-stone-900", hover: "hover:bg-stone-100",
+    ring: "focus:ring-amber-600", pill: "bg-stone-800 text-stone-50",
+    seg: "bg-stone-200", segOn: "bg-white text-stone-900", segOff: "text-stone-500",
+    okB: "border-emerald-600", okBg: "bg-emerald-50", okFg: "text-emerald-900", okT: "text-emerald-700",
+    noB: "border-rose-500", noBg: "bg-rose-50", noFg: "text-rose-900", noT: "text-rose-700",
+    barOk: "bg-emerald-500", barMid: "bg-amber-500", barBad: "bg-rose-500",
+    overlay: "bg-stone-900 bg-opacity-50", idle: "bg-white text-stone-400 border-stone-200",
+    verse: "text-stone-900", verseDim: "text-stone-500", off: "text-stone-300",
+    hero: "bg-white", root: "#fafaf9",
+  },
+};

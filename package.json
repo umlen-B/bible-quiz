@@ -1,16 +1,22 @@
 {
-  "name": "mark-bible-quiz",
+  "name": "bible-quiz",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:data": "node scripts/gen-data.mjs",
+    "verify:data": "node scripts/verify-parity.mjs",
+    "check:strings": "node scripts/check-strings.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "npm run verify:data && npm run check:strings && npm run smoke"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
@@ -18,5 +24,6 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "vite": "^5.4.8"
-  }
+  },
+  "description": "Bible quiz practice papers \u2014 the Gospel of Mark, in English and Hindi."
 }
