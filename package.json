@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs && node scripts/check-dist.mjs",
     "preview": "vite preview",
     "gen:data": "node scripts/gen-data.mjs",
     "verify:data": "node scripts/verify-parity.mjs",
     "check:strings": "node scripts/check-strings.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "test": "npm run verify:data && npm run check:strings && npm run smoke"
+    "test": "npm run verify:data && npm run check:strings && npm run smoke",
+    "gen:og": "node scripts/gen-og-image.mjs",
+    "check:dist": "node scripts/check-dist.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -19,6 +21,7 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

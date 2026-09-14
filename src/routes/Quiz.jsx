@@ -7,29 +7,39 @@ import { Controls, Footer } from "../components/ui.jsx";
 import { Scripture } from "../components/Scripture.jsx";
 import { prepare, qText, oText, eText, clock } from "../lib/quiz.js";
 import { loadChapter, loadPool, loadMock, findMock } from "../lib/content.js";
-import { CHAPTERS } from "../data/meta.js";
+import { CHAPTERS, TOTAL } from "../data/meta.js";
+import { CH_HI } from "../i18n/strings.js";
 import { paths, BOOK_BASE } from "../lib/routes.js";
 import { useSeo, paperSeo } from "../lib/seo.js";
 import { track } from "../lib/analytics.js";
 
 // Turns the URL slug into the questions to ask and a name for the paper.
 // Recognised slugs: ch-1 … ch-16, all, mock-full-N, mock-1-to-8-N, mock-9-to-16-N.
-function resolve(slug, t) {
+function resolve(slug, t, lang) {
   if (!slug) return null;
 
   const chapter = /^ch-(\d+)$/.exec(slug);
   if (chapter) {
     const ch = Number(chapter[1]);
     if (!CHAPTERS.some((c) => c.ch === ch)) return null;
+    const c = CHAPTERS.find((x) => x.ch === ch);
     return {
       key: slug,
       label: `${t.chapter} ${ch}`,
-      load: () => loadChapter(ch).then((c) => c.qs.map((x) => ({ ...x, ch }))),
+      // Titles and counts come from the eager metadata, so they are on screen
+      // (and in the prerendered HTML) before the questions have been fetched.
+      blurb: `${lang === "hi" ? CH_HI[ch - 1] : c.title} · ${t.qCount(c.count)}`,
+      load: () => loadChapter(ch).then((x) => x.qs.map((q) => ({ ...q, ch }))),
     };
   }
 
   if (slug === "all") {
-    return { key: slug, label: t.everything, load: () => loadPool(CHAPTERS.map((c) => c.ch)) };
+    return {
+      key: slug,
+      label: t.everything,
+      blurb: t.qCount(TOTAL),
+      load: () => loadPool(CHAPTERS.map((c) => c.ch)),
+    };
   }
 
   const m = findMock(slug);
@@ -37,6 +47,7 @@ function resolve(slug, t) {
   return {
     key: m.slug,
     label: (m.group === "g1" ? t.fullP : t[m.group + "p"]) + " " + m.paper,
+    blurb: `${t[m.group + "n"]} · ${t.qCount(m.size)}`,
     load: () => loadMock(m.slug),
   };
 }
@@ -46,7 +57,7 @@ export default function Quiz() {
   const navigate = useNavigate();
   const { theme, setTheme, lang, setLanguage, tr, setTr, mode, th, t } = useApp();
 
-  const target = useMemo(() => resolve(slug, t), [slug, t]);
+  const target = useMemo(() => resolve(slug, t, lang), [slug, t, lang]);
 
   const seo = paperSeo(slug);
   useSeo({
@@ -173,8 +184,11 @@ export default function Quiz() {
           </Link>
           {ctrl}
         </div>
+        {/* Naming the paper while it loads beats three anonymous bars, and it
+            gives the prerendered HTML a real heading for this URL. */}
+        <h1 className="font-serif text-3xl leading-tight mb-1">{label}</h1>
+        <p className={"text-sm mb-6 " + th.dim}>{target.blurb}</p>
         <div className="space-y-3" aria-live="polite" aria-busy="true">
-          <div className={"h-3 w-32 rounded animate-pulse " + th.track} />
           <div className={"h-8 w-full rounded animate-pulse " + th.track} />
           <div className={"h-8 w-5/6 rounded animate-pulse " + th.track} />
         </div>

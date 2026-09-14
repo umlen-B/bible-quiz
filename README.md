@@ -55,10 +55,37 @@ landing page. None of it is in the entry bundle:
 First load went from **250 KB gzipped to about 65 KB**. A chapter adds roughly 8 KB,
 and the first revealed answer adds one translation, roughly 26 KB.
 
+### Prerendering
+
+`npm run build` renders all 28 routes to static HTML, so every URL is readable
+without running JavaScript — which is what social link previews and most AI
+search crawlers need, since they do not execute it. The client boots on top and
+takes over from the first paint.
+
+Quiz pages prerender their heading, chapter title and question count; the
+questions themselves are fetched client-side, because a paper is reshuffled on
+every attempt and baking one shuffle into the HTML would be wrong.
+
+`scripts/check-dist.mjs` runs at the end of every build and fails it if a page
+did not prerender, two pages share a title, a canonical does not match its path,
+or `404.html` stops being an empty shell.
+
 Mock papers are not stored. They are rebuilt from the chapter modules with a fixed
 seed, so a given paper is always the same hundred questions without a hundred
 questions being duplicated on disk. `npm run verify:data` proves the papers still
 match the ones the original single-file build produced.
+
+---
+
+## The link preview image
+
+`public/og.png` is committed. To change it, edit the SVG in
+`scripts/gen-og-image.mjs` and run `npm run gen:og`; it caches the font it needs
+into a gitignored folder, so the deploy never depends on the network.
+
+The card is deliberately Latin-only. The renderer mangles Devanagari conjuncts
+and drops spaces, so it reads "English and Hindi" rather than risk broken
+हिन्दी on every shared link.
 
 ---
 
@@ -97,8 +124,13 @@ Pushing to `main` builds and republishes through GitHub Actions. The first time 
 set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 
 Because GitHub Pages has no server-side rewrite, the build also writes `dist/404.html`
-as a copy of `index.html`. That is what makes a direct hit on a deep link such as
-`/new-testament/mark/ch-1` work instead of returning a 404.
+as an empty copy of the shell. Prerendering means most deep links are served as real
+files; 404.html catches anything else and lets the router decide.
+
+Note that the two build-output plugins in `vite.config.js` are marked
+`apply: "build"`. Without it they also fire when a dev server closes, and the
+prerenderer — which starts a dev server — would overwrite `404.html` with an
+already-prerendered page.
 
 ### DNS for bible-quiz.bhengra.co.in
 

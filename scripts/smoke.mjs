@@ -27,22 +27,18 @@ const { MemoryRouter } = await vite.ssrLoadModule("react-router-dom");
 
 const { Routes, Route } = await vite.ssrLoadModule("react-router-dom");
 const { BOOK_BASE } = await vite.ssrLoadModule("/src/lib/routes.js");
+const { ROUTES } = await vite.ssrLoadModule("/src/routes/index.js");
 
-// Mirrors the route table in App.jsx so useParams() sees real values.
+// Uses the same route table App.jsx does, so the two cannot drift.
+const screens = await Promise.all(ROUTES.map((r) => r.load().then((m) => m.default)));
+const e = React.createElement;
+
 async function render(path) {
-  const [Landing, Book, Quiz] = await Promise.all(
-    ["/src/routes/Landing.jsx", "/src/routes/Book.jsx", "/src/routes/Quiz.jsx"]
-      .map((m) => vite.ssrLoadModule(m).then((x) => x.default))
-  );
-  const e = React.createElement;
   return renderToString(
     e(MemoryRouter, { initialEntries: [path] },
       e(AppProvider, null,
         e(Routes, null,
-          e(Route, { path: "/", element: e(Landing) }),
-          e(Route, { path: BOOK_BASE, element: e(Book) }),
-          e(Route, { path: `${BOOK_BASE}/:slug`, element: e(Quiz) })
-        )))
+          ...ROUTES.map((r, i) => e(Route, { key: r.path, path: r.path, element: e(screens[i]) })))))
   );
 }
 
@@ -94,6 +90,19 @@ for (const bad of ["ch-0", "ch-17", "ch-abc", "mock-full-4", "nonsense"]) {
   if (!html.includes("No such paper")) { console.log(`FAIL  ${bad} should not resolve`); fail++; }
 }
 console.log("OK    rejected slugs stay rejected");
+
+// Visitors and crawlers land on the trailing-slash form, because that is what
+// GitHub Pages redirects to once the page is prerendered to <path>/index.html.
+let slashBad = 0;
+for (const slug of ["ch-1", "ch-16", "all", "mock-full-1", "mock-9-to-16-3"]) {
+  const html = await render(`${BOOK_BASE}/${slug}/`);
+  if (html.includes("No such paper")) { console.log(`FAIL  trailing slash breaks ${slug}`); slashBad++; }
+}
+if ((await render("/new-testament/mark/")).includes("Practice papers for the Gospels")) {
+  console.log("FAIL  trailing slash on the book page fell through to the landing route"); slashBad++;
+}
+fail += slashBad;
+console.log(`${slashBad ? "FAIL " : "OK   "} trailing-slash URLs resolve to the same pages`);
 
 // Every public URL must have a title and description for search results.
 const { paperSeo, allPaths } = await vite.ssrLoadModule("/src/lib/seo.js");

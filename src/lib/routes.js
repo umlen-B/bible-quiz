@@ -22,3 +22,12 @@ export const PAPER_SLUGS = [
 export function allPaths() {
   return ["/", BOOK_BASE, ...PAPER_SLUGS.map((s) => `${BOOK_BASE}/${s}`)];
 }
+
+export const SITE = "https://bible-quiz.bhengra.co.in";
+
+// Prerendering writes <path>/index.html, and GitHub Pages redirects the
+// slashless form to the trailing-slash one. Canonical links and the sitemap
+// therefore both name the trailing-slash URL — the one actually served.
+export function canonicalUrl(path) {
+  return SITE + (path === "/" ? "/" : path + "/");
+}

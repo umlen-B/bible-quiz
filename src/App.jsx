@@ -3,12 +3,11 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "./AppContext.jsx";
-import { BOOK_BASE, paths } from "./lib/routes.js";
+import { paths } from "./lib/routes.js";
+import { ROUTES } from "./routes/index.js";
 import { initAnalytics, pageview } from "./lib/analytics.js";
 
-const Landing = lazy(() => import("./routes/Landing.jsx"));
-const Book = lazy(() => import("./routes/Book.jsx"));
-const Quiz = lazy(() => import("./routes/Quiz.jsx"));
+const LAZY = ROUTES.map((r) => lazy(r.load));
 
 function Splash() {
   const { th } = useApp();
@@ -30,12 +29,10 @@ function Shell() {
       <ScrollAndTrack />
       <Suspense fallback={<Splash />}>
         <Routes>
-          <Route path={paths.home} element={<Landing />} />
-          <Route path={BOOK_BASE} element={<Book />} />
-          {/* One segment for every paper: ch-1 … ch-16, all, and the mock slugs.
-              React Router v6 only binds a param to a whole segment, so the
-              chapter number is parsed out of the slug in the route itself. */}
-          <Route path={`${BOOK_BASE}/:slug`} element={<Quiz />} />
+          {ROUTES.map((r, i) => {
+            const Screen = LAZY[i];
+            return <Route key={r.path} path={r.path} element={<Screen />} />;
+          })}
           <Route path="*" element={<Navigate to={paths.home} replace />} />
         </Routes>
       </Suspense>

@@ -7,8 +7,11 @@ import { useEffect } from "react";
 import { CHAPTERS, TOTAL } from "../data/meta.js";
 import { BOOK_BASE } from "./routes.js";
 
-export const SITE = "https://bible-quiz.bhengra.co.in";
+export { SITE, canonicalUrl, allPaths } from "./routes.js";
+import { SITE, canonicalUrl } from "./routes.js";
 export const SITE_NAME = "Bible Quiz";
+export const OG_IMAGE = `${SITE}/og.png`;
+export const OG_ALT = "Bible Quiz — the Gospel of Mark, 559 practice questions in English and Hindi";
 
 const GROUP_NAME = {
   "mock-full": "Full Mock Paper",
@@ -88,7 +91,7 @@ export function useSeo({ title, description, path }) {
   useEffect(() => {
     if (!title) return;
     const full = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
-    const url = SITE + (path || "/");
+    const url = canonicalUrl(path || "/");
 
     document.title = full;
     setMeta("name", "description", description);
@@ -97,7 +100,12 @@ export function useSeo({ title, description, path }) {
     setMeta("property", "og:url", url);
     setMeta("property", "og:type", "website");
     setMeta("property", "og:site_name", SITE_NAME);
-    setMeta("name", "twitter:card", "summary");
+    setMeta("property", "og:image", OG_IMAGE);
+    setMeta("property", "og:image:width", "1200");
+    setMeta("property", "og:image:height", "630");
+    setMeta("property", "og:image:alt", OG_ALT);
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:image", OG_IMAGE);
     setMeta("name", "twitter:title", full);
     setMeta("name", "twitter:description", description);
 
@@ -110,4 +118,3 @@ export function useSeo({ title, description, path }) {
   }, [title, description, path]);
 }
 
-export { allPaths } from "./routes.js";

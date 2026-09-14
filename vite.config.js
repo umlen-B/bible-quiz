@@ -1,9 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { copyFileSync, writeFileSync } from "node:fs";
-import { allPaths } from "./src/lib/routes.js";
-
-const SITE = "https://bible-quiz.bhengra.co.in";
+import { allPaths, canonicalUrl, SITE } from "./src/lib/routes.js";
 
 // GitHub Pages has no server-side rewrite, so a direct hit on a deep link like
 // /new-testament/mark/ch-1 is served 404.html. Shipping a copy of index.html
@@ -11,6 +9,10 @@ const SITE = "https://bible-quiz.bhengra.co.in";
 function spaFallback() {
   return {
     name: "spa-fallback-404",
+    // Build only. In a dev server these hooks also fire when the server is
+    // closed, which is how the prerenderer ended up overwriting 404.html with
+    // an already-prerendered index.html.
+    apply: "build",
     closeBundle() {
       copyFileSync("dist/index.html", "dist/404.html");
     },
@@ -23,9 +25,10 @@ function spaFallback() {
 function seoFiles() {
   return {
     name: "seo-files",
+    apply: "build",
     closeBundle() {
       const urls = allPaths()
-        .map((p) => `  <url><loc>${SITE}${p}</loc></url>`)
+        .map((p) => `  <url><loc>${canonicalUrl(p)}</loc></url>`)
         .join("\n");
       writeFileSync("dist/sitemap.xml",
         `<?xml version="1.0" encoding="UTF-8"?>\n` +

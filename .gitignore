@@ -6,3 +6,6 @@ dist
 # local env
 .env.local
 .env
+
+# fonts cached by scripts/gen-og-image.mjs
+scripts/.fonts/

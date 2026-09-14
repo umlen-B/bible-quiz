@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Defaults. Each route replaces these from src/lib/seo.js once it mounts. -->
+    <!--seo-->
+    <!-- Defaults. Prerendering replaces this block per page; in the browser
+         src/lib/seo.js keeps it current as the route changes. -->
     <title>Bible Quiz — Practice Papers for the Gospels</title>
     <meta
       name="description"
@@ -21,7 +23,16 @@
       content="559 practice questions on the Gospel of Mark, with the passage shown for every answer in English and Hindi."
     />
     <meta property="og:url" content="https://bible-quiz.bhengra.co.in/" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://bible-quiz.bhengra.co.in/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Bible Quiz — the Gospel of Mark, 559 practice questions in English and Hindi"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://bible-quiz.bhengra.co.in/og.png" />
+    <!--/seo-->
 
     <script type="application/ld+json">
       {
@@ -43,6 +54,15 @@
       }
     </script>
   </head>
+  <script>
+    // Runs before paint. The app owns the theme; this only stops the
+    // prerendered markup flashing the wrong background on the way in.
+    try {
+      var t = localStorage.getItem("bq.theme");
+      document.documentElement.style.backgroundColor =
+        t === "light" ? "#fafaf9" : "#020617";
+    } catch (e) {}
+  </script>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
