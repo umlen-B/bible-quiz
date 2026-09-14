@@ -3,12 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Gospel of Mark — Bible Quiz Practice</title>
+
+    <!-- Defaults. Each route replaces these from src/lib/seo.js once it mounts. -->
+    <title>Bible Quiz — Practice Papers for the Gospels</title>
     <meta
       name="description"
       content="559 practice questions on the Gospel of Mark, with the passage shown for every answer in English and Hindi."
     />
+    <link rel="canonical" href="https://bible-quiz.bhengra.co.in/" />
     <meta name="theme-color" content="#020617" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bible Quiz" />
+    <meta property="og:title" content="Bible Quiz — Practice Papers for the Gospels" />
+    <meta
+      property="og:description"
+      content="559 practice questions on the Gospel of Mark, with the passage shown for every answer in English and Hindi."
+    />
+    <meta property="og:url" content="https://bible-quiz.bhengra.co.in/" />
+    <meta name="twitter:card" content="summary" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Bible Quiz",
+        "url": "https://bible-quiz.bhengra.co.in/",
+        "inLanguage": ["en", "hi"],
+        "description": "Bible quiz practice papers with the passage attached to every answer, in English and Hindi.",
+        "author": { "@type": "Person", "name": "Johnson Bhengra" },
+        "hasPart": {
+          "@type": "Quiz",
+          "name": "The Gospel of Mark",
+          "url": "https://bible-quiz.bhengra.co.in/new-testament/mark",
+          "educationalLevel": "beginner",
+          "about": { "@type": "Book", "name": "Gospel of Mark" },
+          "numberOfQuestions": 559
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

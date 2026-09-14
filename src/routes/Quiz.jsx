@@ -8,7 +8,8 @@ import { Scripture } from "../components/Scripture.jsx";
 import { prepare, qText, oText, eText, clock } from "../lib/quiz.js";
 import { loadChapter, loadPool, loadMock, findMock } from "../lib/content.js";
 import { CHAPTERS } from "../data/meta.js";
-import { paths } from "../lib/routes.js";
+import { paths, BOOK_BASE } from "../lib/routes.js";
+import { useSeo, paperSeo } from "../lib/seo.js";
 import { track } from "../lib/analytics.js";
 
 // Turns the URL slug into the questions to ask and a name for the paper.
@@ -46,6 +47,13 @@ export default function Quiz() {
   const { theme, setTheme, lang, setLanguage, tr, setTr, mode, th, t } = useApp();
 
   const target = useMemo(() => resolve(slug, t), [slug, t]);
+
+  const seo = paperSeo(slug);
+  useSeo({
+    title: seo ? seo.title : t.notFound,
+    description: seo ? seo.description : t.notFoundBody,
+    path: `${BOOK_BASE}/${slug}`,
+  });
 
   const [deck, setDeck] = useState([]);
   const [answers, setAnswers] = useState([]);

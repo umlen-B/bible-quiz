@@ -95,6 +95,20 @@ for (const bad of ["ch-0", "ch-17", "ch-abc", "mock-full-4", "nonsense"]) {
 }
 console.log("OK    rejected slugs stay rejected");
 
+// Every public URL must have a title and description for search results.
+const { paperSeo, allPaths } = await vite.ssrLoadModule("/src/lib/seo.js");
+const { PAPER_SLUGS } = await vite.ssrLoadModule("/src/lib/routes.js");
+let seoBad = 0;
+for (const slug of PAPER_SLUGS) {
+  const s = paperSeo(slug);
+  if (!s || !s.title || !s.description) { console.log(`FAIL  no SEO for ${slug}`); seoBad++; }
+  else if (s.title.length > 65) { console.log(`WARN  title long (${s.title.length}): ${s.title}`); }
+  else if (s.description.length > 160) { console.log(`WARN  description long (${s.description.length}) for ${slug}`); }
+}
+fail += seoBad;
+console.log(`${seoBad ? "FAIL " : "OK   "} SEO title+description for all ${PAPER_SLUGS.length} papers`);
+console.log(`OK    sitemap covers ${allPaths().length} URLs`);
+
 await vite.close();
 console.log("-".repeat(50));
 console.log(fail === 0 ? "All smoke checks passed." : `${fail} smoke check(s) FAILED.`);

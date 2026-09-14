@@ -7,9 +7,11 @@ import { Controls, Footer } from "../components/ui.jsx";
 import { CHAPTERS, TOTAL } from "../data/meta.js";
 import { MOCK_COUNT } from "../lib/content.js";
 import { paths } from "../lib/routes.js";
+import { useSeo, ROUTE_SEO } from "../lib/seo.js";
 
 export default function Landing() {
   const { theme, setTheme, lang, setLanguage, th, t } = useApp();
+  useSeo({ ...ROUTE_SEO.home, path: "/" });
   const primary =
     "block text-center w-full rounded-lg py-3 font-medium focus:outline-none focus:ring-2 " +
     th.accBg + " " + th.accFg + " " + th.ring;
